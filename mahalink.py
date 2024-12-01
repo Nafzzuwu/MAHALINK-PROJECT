@@ -28,7 +28,7 @@ def initialize_csv(file_name):
 def clear_terminal():
     os.system('cls' if os.name == 'nt' else 'clear')
 
-def loading_dots(duration=5, interval=0.5):
+def loading_dots(duration=3, interval=0.5):
     end_time = time.time() + duration
     while time.time() < end_time:
         for i in range(4):
@@ -36,7 +36,7 @@ def loading_dots(duration=5, interval=0.5):
             sys.stdout.flush()
             time.sleep(interval)
             
-def loading_masuk(duration=5, interval=0.5):
+def loading_masuk(duration=3, interval=0.5):
     end_time = time.time() + duration
     while time.time() < end_time:
         for i in range(4):
@@ -130,7 +130,7 @@ def pengumuman_akademik(role):
             elif choice == "8":
                 delete_announcement(LIBUR_FILE)
             elif choice == "9":
-                break
+                menu("admin")
             else:
                 print(Fore.RED + "Pilihan tidak valid. Silakan coba lagi.")
     elif role == "mahasiswa":
@@ -146,7 +146,7 @@ def pengumuman_akademik(role):
             elif choice == "2":
                 display_announcements(LIBUR_FILE)
             elif choice == "3":
-                break
+                menu("mahasiswa")
             else:
                 print(Fore.RED + "Pilihan tidak valid. Silakan coba lagi.")
 
