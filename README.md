@@ -1,0 +1,1 @@
+Merupakan sebuah file projek sebuah aplikasi Sistem Informasi Akademik, yang bertujuan mempermudah Mahasiswa untuk mengetahui segala informasi terkait Akademik/NonAkademik di perkuliahan mereka, serta mempunyai fitur sebagai admin yang dapat mengedit segala informasi fitur yang akan diberikan kepada Mahasiswa
