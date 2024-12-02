@@ -4,6 +4,7 @@ import time
 import pandas as pd
 from colorama import Fore, Style, init
 from art import text2art
+from datetime import datetime
 
 init(autoreset=True)
 
@@ -24,11 +25,18 @@ def initialize_csv(file_name):
     if not os.path.exists(file_name):
         df = pd.DataFrame(columns=["ID", "Judul", "Isi", "Tanggal"])
         df.to_csv(file_name, index=False)
+        
+def initialize_kehadiran():
+    ATTENDANCE_FILE = "data_kehadiran.csv"
+    if not os.path.exists(ATTENDANCE_FILE):
+        df = pd.DataFrame(columns=["ID","nim", "matkul", "tanggal", "jam", "status"])
+        df.to_csv(ATTENDANCE_FILE, index=False)
+    return ATTENDANCE_FILE
 
 def clear_terminal():
     os.system('cls' if os.name == 'nt' else 'clear')
 
-def loading_dots(duration=3, interval=0.5):
+def loading_dots(duration=1, interval=0.3):
     end_time = time.time() + duration
     while time.time() < end_time:
         for i in range(4):
@@ -36,7 +44,7 @@ def loading_dots(duration=3, interval=0.5):
             sys.stdout.flush()
             time.sleep(interval)
             
-def loading_masuk(duration=3, interval=0.5):
+def loading_masuk(duration=1, interval=0.3):
     end_time = time.time() + duration
     while time.time() < end_time:
         for i in range(4):
@@ -45,7 +53,8 @@ def loading_masuk(duration=3, interval=0.5):
             time.sleep(interval)
     print("\n")
 
-# Tampilkan semua pengumuman dari file CSV
+###  FITUR 1  ###
+
 def display_announcements(file_name):
     initialize_csv(file_name)
     df = pd.read_csv(file_name)
@@ -55,7 +64,6 @@ def display_announcements(file_name):
         print(Fore.CYAN + "\nDaftar Pengumuman:")
         print(df.to_markdown(index=False, tablefmt="grid"))
 
-# Tambah pengumuman baru
 def add_announcement(file_name):
     initialize_csv(file_name)
     judul = input(Fore.YELLOW + "Masukkan judul pengumuman: ")
@@ -67,7 +75,6 @@ def add_announcement(file_name):
     df.to_csv(file_name, index=False)
     print(Fore.GREEN + "Pengumuman berhasil ditambahkan.")
 
-# Edit pengumuman berdasarkan ID
 def edit_announcement(file_name):
     initialize_csv(file_name)
     display_announcements(file_name)
@@ -84,7 +91,6 @@ def edit_announcement(file_name):
     else:
         print(Fore.RED + "ID tidak ditemukan.")
 
-# Hapus pengumuman berdasarkan ID
 def delete_announcement(file_name):
     initialize_csv(file_name)
     display_announcements(file_name)
@@ -97,7 +103,6 @@ def delete_announcement(file_name):
     else:
         print(Fore.RED + "ID tidak ditemukan.")
 
-# Fitur Pengumuman Akademik berdasarkan role
 def pengumuman_akademik(role):
     if role == "admin":
         while True:
@@ -130,7 +135,7 @@ def pengumuman_akademik(role):
             elif choice == "8":
                 delete_announcement(LIBUR_FILE)
             elif choice == "9":
-                menu("admin")
+                break
             else:
                 print(Fore.RED + "Pilihan tidak valid. Silakan coba lagi.")
     elif role == "mahasiswa":
@@ -146,11 +151,108 @@ def pengumuman_akademik(role):
             elif choice == "2":
                 display_announcements(LIBUR_FILE)
             elif choice == "3":
-                menu("mahasiswa")
+                break
             else:
                 print(Fore.RED + "Pilihan tidak valid. Silakan coba lagi.")
+                
+###  FITUR 2  ###
 
-def menu(role):
+def initialize_kehadiran():
+    ATTENDANCE_FILE = "data_kehadiran.csv"
+    if not os.path.exists(ATTENDANCE_FILE):
+        df = pd.DataFrame(columns=["ID", "nim", "matkul", "tanggal", "jam", "status"])
+        df.to_csv(ATTENDANCE_FILE, index=False)
+    return ATTENDANCE_FILE
+
+def admin_manage_kehadiran():
+    ATTENDANCE_FILE = initialize_kehadiran()
+    df = pd.read_csv(ATTENDANCE_FILE, dtype={"nim": str})
+
+    while True:
+        print(Fore.CYAN + "\n=== KELOLA DATA KEHADIRAN ===")
+        nim = input(Fore.YELLOW + "Masukkan NIM Mahasiswa yang Dicari: ")
+        mahasiswa_data = df[df["nim"] == nim]
+
+        if not mahasiswa_data.empty:
+            print(Fore.CYAN + "\nData Kehadiran Mahasiswa:")
+            print(mahasiswa_data.to_markdown(index=False, tablefmt="grid"))
+            
+            print(Fore.YELLOW + "1. Edit Data Kehadiran")
+            print(Fore.YELLOW + "2. Kembali")
+            choice = input(Fore.YELLOW + "Pilih opsi: ")
+
+            if choice == "1":
+                id_to_edit = input(Fore.YELLOW + "Masukkan ID data yang ingin diubah: ")
+                if id_to_edit in df["ID"].astype(str).values:
+                    index = df[df["ID"] == int(id_to_edit)].index[0]
+                    new_status = input(Fore.YELLOW + f"Masukkan status baru (sebelumnya: {df.at[index, 'status']}): ") or df.at[index, "status"]
+                    df.at[index, "status"] = new_status.capitalize()
+                    df.to_csv(ATTENDANCE_FILE, index=False)
+                    clear_terminal()
+                    loading_masuk()
+                    clear_terminal()
+                    print(Fore.GREEN + "Data berhasil diperbarui.")
+                    print("")
+                    break
+                else:
+                    print(Fore.RED + "ID tidak ditemukan!")
+            elif choice == "2":
+                break
+            else:
+                print(Fore.RED + "Pilihan tidak valid!")
+        else:
+            print(Fore.RED + "NIM tidak ditemukan.")
+
+def mahasiswa_absensi(nim):
+    ATTENDANCE_FILE = initialize_kehadiran()
+    df = pd.read_csv(ATTENDANCE_FILE, dtype={"nim": str})
+
+    jadwal_matkul = {
+        "Pemrograman Dasar": ("08:00", "09:00"),
+        "Matematika Diskrit": ("10:00", "11:00"),
+        "Sistem Operasi": ("13:00", "14:00"),
+        "Struktur Data": ("16:00", "17:00"),
+        "Kecerdasan Buatan": ("20:00", "21:00"),
+    }
+
+    print(Fore.CYAN + "\n=== JADWAL MATA KULIAH ===")
+    for matkul, (start, end) in jadwal_matkul.items():
+        print(Fore.YELLOW + f"- {matkul}: {start} - {end}")
+
+    print(Fore.CYAN + "\n=== ABSENSI ===")
+    current_time = datetime.now().strftime("%H:%M")
+    print(Fore.GREEN + f"Waktu Sekarang: {current_time}")
+
+    for matkul, (start, end) in jadwal_matkul.items():
+        if start <= current_time <= end:
+            print(Fore.YELLOW + f"Anda dapat absen untuk mata kuliah {matkul}.")
+            absen = input(Fore.YELLOW + f"Absen untuk {matkul} (ya/tidak)? ").strip().lower()
+            if absen == "ya":
+                new_id = len(df) + 1
+                df = pd.concat([df, pd.DataFrame({
+                    "ID": [new_id],
+                    "nim": [nim],
+                    "matkul": [matkul],
+                    "tanggal": [datetime.now().strftime("%Y-%m-%d")],
+                    "jam": [current_time],
+                    "status": ["Hadir"]
+                })])
+                df.to_csv(ATTENDANCE_FILE, index=False)
+                print(Fore.GREEN + f"Anda berhasil absen untuk mata kuliah {matkul}.")
+        elif current_time < start:
+            print(Fore.CYAN + f"Waktu absensi untuk mata kuliah {matkul} belum dimulai.")
+        elif current_time > end:
+            print(Fore.RED + f"Waktu absensi untuk mata kuliah {matkul} telah berlalu.")
+
+    print(Fore.CYAN + "\nAbsensi selesai.")
+
+def data_kehadiran(role):
+    if role == "admin":
+        admin_manage_kehadiran()
+    elif role == "mahasiswa":
+        mahasiswa_absensi(role)
+
+def menu(role, nim):
     clear_terminal()
     loading_masuk()
     clear_terminal()
@@ -179,12 +281,14 @@ def menu(role):
             print(Fore.RED + "8. Keluar")
         print(Fore.CYAN + "=" * 40)
         
-        choice = input(Fore.YELLOW + "Pilihlah opsi: ")
+        choice = input(Fore.YELLOW + "Pilih opsi: ").strip()
         
         if role == "admin":
             if choice == "1":
                 pengumuman_akademik(role)
-            if choice == "8":
+            elif choice == "2":
+                data_kehadiran(role)
+            elif choice == "8":
                 print(Fore.GREEN + "Anda telah keluar dari menu.")
                 break
             else:
@@ -192,7 +296,9 @@ def menu(role):
         elif role == "mahasiswa":
             if choice == "1":
                 pengumuman_akademik(role)
-            if choice == "8":
+            elif choice == "2":
+                mahasiswa_absensi(nim)
+            elif choice == "8":
                 print(Fore.GREEN + "Anda telah keluar dari menu.")
                 break
             else:
@@ -231,12 +337,12 @@ def login():
         stored_password = df.loc[df["nim"] == nim, "password"].values[0]
         stored_role = df.loc[df["nim"] == nim, "role"].values[0]
         if stored_password == password:
-            return stored_role
+            return stored_role, nim
         else:
             print(Fore.RED + "Password salah!")
     else:
         print(Fore.RED + "NIM tidak ditemukan!")
-    return None
+    return None, None
 
 def main():
     print(Fore.CYAN + "=" * 40)
@@ -251,9 +357,9 @@ def main():
         if choice == '1':
             register_as_mahasiswa()
         elif choice == '2':
-            user_role = login()
+            user_role, user_nim = login()
             if user_role:
-                menu(user_role)
+                menu(user_role, user_nim)
         elif choice == '3':
             clear_terminal()
             loading_dots()
