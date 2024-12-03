@@ -8,6 +8,7 @@ from datetime import datetime
 
 init(autoreset=True)
 
+NILAI_FILE = "data_nilai.csv"
 CSV_FILE = "mahasiswa_data.csv"
 LOMBA_FILE = "pengumuman_lomba.csv"
 LIBUR_FILE = "pengumuman_libur.csv"
@@ -32,6 +33,11 @@ def initialize_kehadiran():
         df = pd.DataFrame(columns=["ID","nim", "matkul", "tanggal", "jam", "status"])
         df.to_csv(ATTENDANCE_FILE, index=False)
     return ATTENDANCE_FILE
+
+def initialize_nilai_file():
+    if not os.path.exists(NILAI_FILE):
+        df = pd.DataFrame(columns=["ID", "NIM", "Nama", "Mata Kuliah", "Tugas", "UTS", "UAS", "Rata-rata"])
+        df.to_csv(NILAI_FILE, index=False)
 
 def clear_terminal():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -68,7 +74,7 @@ def add_announcement(file_name):
     initialize_csv(file_name)
     judul = input(Fore.YELLOW + "Masukkan judul pengumuman: ")
     isi = input(Fore.YELLOW + "Masukkan isi pengumuman: ")
-    tanggal = input(Fore.YELLOW + "Mausukkan tanggal pengumuman (YYYY-MM-DD): ")
+    tanggal = input(Fore.YELLOW + "Mausukkan tanggal pengumuman: ")
     df = pd.read_csv(file_name)
     new_id = len(df) + 1
     df = pd.concat([df, pd.DataFrame({"ID": [new_id], "Judul": [judul], "Isi": [isi], "Tanggal": [tanggal]})])
@@ -229,11 +235,12 @@ def mahasiswa_absensi(nim):
             absen = input(Fore.YELLOW + f"Absen untuk {matkul} (ya/tidak)? ").strip().lower()
             if absen == "ya":
                 new_id = len(df) + 1
+                tanggal = input(Fore.YELLOW + f"Masukkan tanggal absensi anda (Tanggal, Nama Bulan, Tahun): ")
                 df = pd.concat([df, pd.DataFrame({
                     "ID": [new_id],
                     "nim": [nim],
                     "matkul": [matkul],
-                    "tanggal": [datetime.now().strftime("%Y-%m-%d")],
+                    "tanggal": [tanggal],
                     "jam": [current_time],
                     "status": ["Hadir"]
                 })])
@@ -251,6 +258,110 @@ def data_kehadiran(role):
         admin_manage_kehadiran()
     elif role == "mahasiswa":
         mahasiswa_absensi(role)
+        
+###  FITUR 3 ###
+
+def tambah_nilai():
+    initialize_nilai_file()
+    df = pd.read_csv(NILAI_FILE)
+
+    nim = input(Fore.YELLOW + "Masukkan NIM: ")
+    nama = input(Fore.YELLOW + "Masukkan Nama Mahasiswa: ")
+    matkul = input(Fore.YELLOW + "Masukkan Mata Kuliah: ")
+    tugas = float(input(Fore.YELLOW + "Masukkan Nilai Tugas: "))
+    uts = float(input(Fore.YELLOW + "Masukkan Nilai UTS: "))
+    uas = float(input(Fore.YELLOW + "Masukkan Nilai UAS: "))
+
+    rata_rata = (tugas + uts + uas) / 3
+    new_id = len(df) + 1
+    new_data = {
+        "ID": new_id,
+        "NIM": nim,
+        "Nama": nama,
+        "Mata Kuliah": matkul,
+        "Tugas": tugas,
+        "UTS": uts,
+        "UAS": uas,
+        "Rata-rata": rata_rata
+    }
+    
+    df = pd.concat([df, pd.DataFrame([new_data])], ignore_index=True)
+    df.to_csv(NILAI_FILE, index=False)
+
+    print(Fore.GREEN + "Data nilai berhasil ditambahkan.")
+    print(df.tail(1).to_markdown(index=False))
+
+def lihat_nilai():
+    initialize_nilai_file()
+    df = pd.read_csv(NILAI_FILE)
+    nim = input(Fore.YELLOW + "Masukkan NIM untuk melihat nilai: ").strip()
+
+    # Konversi NIM di database dan input menjadi string yang sama
+    data_mahasiswa = df[df["NIM"].astype(str).str.strip() == nim]
+    print(Fore.WHITE +df.tail(1).to_markdown(index=False))
+    if data_mahasiswa.empty:
+        print(Fore.RED + "Data nilai tidak ditemukan.")
+        
+def edit_nilai():
+    initialize_nilai_file()
+    df = pd.read_csv(NILAI_FILE)
+    lihat_nilai()
+
+    id_nilai = input(Fore.YELLOW + "Masukkan ID nilai yang ingin diubah: ")
+    if id_nilai in df["ID"].astype(str).values:
+        index = df[df["ID"] == int(id_nilai)].index[0]
+        tugas = float(input(Fore.YELLOW + f"Masukkan Nilai Tugas Baru (sebelumnya {df.at[index, 'Tugas']}): ") or df.at[index, "Tugas"])
+        uts = float(input(Fore.YELLOW + f"Masukkan Nilai UTS Baru (sebelumnya {df.at[index, 'UTS']}): ") or df.at[index, "UTS"])
+        uas = float(input(Fore.YELLOW + f"Masukkan Nilai UAS Baru (sebelumnya {df.at[index, 'UAS']}): ") or df.at[index, "UAS"])
+
+        df.at[index, "Tugas"] = tugas
+        df.at[index, "UTS"] = uts
+        df.at[index, "UAS"] = uas
+        df.at[index, "Rata-rata"] = (tugas + uts + uas) / 3
+        df.to_csv(NILAI_FILE, index=False)
+        print(Fore.GREEN + "Data nilai berhasil diperbarui.")
+    else:
+        print(Fore.RED + "ID tidak ditemukan.")
+
+def hapus_nilai():
+    initialize_nilai_file()
+    df = pd.read_csv(NILAI_FILE)
+    lihat_nilai()
+
+    id_nilai = input(Fore.YELLOW + "Masukkan ID nilai yang ingin dihapus: ")
+    if id_nilai in df["ID"].astype(str).values:
+        df = df[df["ID"] != int(id_nilai)]
+        df.to_csv(NILAI_FILE, index=False)
+        print(Fore.GREEN + "Data nilai berhasil dihapus.")
+    else:
+        print(Fore.RED + "ID tidak ditemukan.")
+
+def data_nilai(role, nim):
+    if role == "admin":
+        while True:
+            print(Fore.CYAN + "\n=== MANAJEMEN DATA NILAI ===")
+            print(Fore.CYAN +"1. Tambah Nilai Mahasiswa")
+            print(Fore.CYAN +"2. Lihat Nilai Mahasiswa")
+            print(Fore.CYAN +"3. Edit Nilai Mahasiswa")
+            print(Fore.CYAN +"4. Hapus Nilai Mahasiswa")
+            print(Fore.RED + "5. Kembali")
+            pilihan = input(Fore.YELLOW + "Pilih opsi: ")
+
+            if pilihan == "1":
+                tambah_nilai()
+            elif pilihan == "2":
+                lihat_nilai()
+            elif pilihan == "3":
+                edit_nilai()
+            elif pilihan == "4":
+                hapus_nilai()
+            elif pilihan == "5":
+                break
+            else:
+                print(Fore.RED + "Pilihan tidak valid.")
+    elif role == "mahasiswa":
+        print(Fore.CYAN + "\n=== DATA NILAI MAHASISWA ===")
+        lihat_nilai()
 
 def menu(role, nim):
     clear_terminal()
@@ -288,6 +399,8 @@ def menu(role, nim):
                 pengumuman_akademik(role)
             elif choice == "2":
                 data_kehadiran(role)
+            elif choice == "3":
+                data_nilai(role,nim)
             elif choice == "8":
                 print(Fore.GREEN + "Anda telah keluar dari menu.")
                 break
@@ -298,6 +411,8 @@ def menu(role, nim):
                 pengumuman_akademik(role)
             elif choice == "2":
                 mahasiswa_absensi(nim)
+            elif choice == "3":
+                data_nilai(role,nim)
             elif choice == "8":
                 print(Fore.GREEN + "Anda telah keluar dari menu.")
                 break
