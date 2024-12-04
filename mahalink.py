@@ -12,6 +12,7 @@ NILAI_FILE = "data_nilai.csv"
 CSV_FILE = "mahasiswa_data.csv"
 LOMBA_FILE = "pengumuman_lomba.csv"
 LIBUR_FILE = "pengumuman_libur.csv"
+UKT_FILE = "data_ukt.csv"
 
 if not os.path.exists(CSV_FILE):
     df = pd.DataFrame(columns=["nim", "password", "role"])
@@ -38,6 +39,11 @@ def initialize_nilai_file():
     if not os.path.exists(NILAI_FILE):
         df = pd.DataFrame(columns=["ID", "NIM", "Nama", "Mata Kuliah", "Tugas", "UTS", "UAS", "Rata-rata"])
         df.to_csv(NILAI_FILE, index=False)
+        
+def initialize_ukt_file():
+    if not os.path.exists(UKT_FILE):
+        df = pd.DataFrame(columns=["NIM", "NAMA", "NOMINAL", "STATUS"])
+        df.to_csv(UKT_FILE, index=False)
 
 def clear_terminal():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -296,9 +302,8 @@ def lihat_nilai():
     df = pd.read_csv(NILAI_FILE)
     nim = input(Fore.YELLOW + "Masukkan NIM untuk melihat nilai: ").strip()
 
-    # Konversi NIM di database dan input menjadi string yang sama
     data_mahasiswa = df[df["NIM"].astype(str).str.strip() == nim]
-    print(Fore.WHITE +df.tail(1).to_markdown(index=False))
+    print(Fore.WHITE + data_mahasiswa.to_markdown(index=False))
     if data_mahasiswa.empty:
         print(Fore.RED + "Data nilai tidak ditemukan.")
         
@@ -363,6 +368,82 @@ def data_nilai(role, nim):
         print(Fore.CYAN + "\n=== DATA NILAI MAHASISWA ===")
         lihat_nilai()
 
+### FITUR 4 ###
+
+def kelola_ukt_admin():
+    initialize_ukt_file()
+    df = pd.read_csv(UKT_FILE, dtype={"NIM": str})
+
+    while True:
+        print(Fore.CYAN + "\n=== KELOLA STATUS UKT ===")
+        nim = input(Fore.YELLOW + "Masukkan NIM mahasiswa: ").strip()
+
+        if not nim.isdigit():
+            print(Fore.RED + "NIM tidak valid. Harus berupa angka.")
+            continue
+
+        mahasiswa = df[df["NIM"] == nim]
+
+        if mahasiswa.empty:
+            print(Fore.RED + "Data tidak ditemukan. Tambahkan data baru.")
+            nama = input(Fore.YELLOW + "Masukkan nama mahasiswa: ").strip()
+            nominal_ukt = float(input(Fore.YELLOW + "Masukkan nominal UKT: "))
+            status_pembayaran = input(Fore.YELLOW + "Masukkan status pembayaran (Lunas/Belum Lunas): ").capitalize()
+
+            new_data = pd.DataFrame({
+                "NIM": [nim],
+                "NAMA": [nama],
+                "NOMINAL": [nominal_ukt],
+                "STATUS": [status_pembayaran]
+            })
+            df = pd.concat([df, new_data], ignore_index=True)
+            df.to_csv(UKT_FILE, index=False)
+            print(Fore.GREEN + "Data berhasil ditambahkan.")
+        else:
+            print(Fore.CYAN + "\nData Mahasiswa:")
+            print(mahasiswa.to_markdown(index=False))
+
+            print(Fore.YELLOW + "1. Ubah Nominal UKT")
+            print(Fore.YELLOW + "2. Ubah Status Pembayaran")
+            print(Fore.YELLOW + "3. Cari Mahasiswa Lain")
+            print(Fore.RED + "4. Kembali ke Menu Utama")
+            pilihan = input(Fore.YELLOW + "Pilih opsi: ").strip()
+
+            if pilihan == "1":
+                nominal_ukt = float(input(Fore.YELLOW + "Masukkan nominal UKT baru: "))
+                df.loc[df["NIM"] == nim, "NOMINAL"] = nominal_ukt
+                df.to_csv(UKT_FILE, index=False)
+                print(Fore.GREEN + "Nominal UKT berhasil diubah.")
+            elif pilihan == "2":
+                status_pembayaran = input(Fore.YELLOW + "Masukkan status pembayaran baru (Lunas/Belum Lunas): ").capitalize()
+                df.loc[df["NIM"] == nim, "STATUS"] = status_pembayaran
+                df.to_csv(UKT_FILE, index=False)
+                print(Fore.GREEN + "Status pembayaran berhasil diubah.")
+            elif pilihan == "3":
+                continue
+            elif pilihan == "4":
+                break
+            else:
+                print(Fore.RED + "Pilihan tidak valid.")
+
+def lihat_ukt_mahasiswa():
+    initialize_ukt_file()
+    df = pd.read_csv(UKT_FILE)
+    nim = input(Fore.YELLOW + "Masukkan NIM Anda: ").strip()
+    mahasiswa_ukt = df[df["NIM"].astype(str).str.strip() == nim]
+    print(Fore.CYAN + "\nData UKT Anda:")
+    print(Fore.WHITE + mahasiswa_ukt.to_markdown(index=False, floatfmt=".0f"))
+    
+    if mahasiswa_ukt.empty:
+        print(Fore.RED + "Data UKT tidak ditemukan.")
+
+def pembayaran_ukt(role, nim):
+    if role == "admin":
+        kelola_ukt_admin()
+    elif role == "mahasiswa":
+        lihat_ukt_mahasiswa()
+
+
 def menu(role, nim):
     clear_terminal()
     loading_masuk()
@@ -401,6 +482,8 @@ def menu(role, nim):
                 data_kehadiran(role)
             elif choice == "3":
                 data_nilai(role,nim)
+            elif choice == "4":
+                pembayaran_ukt(role,nim)
             elif choice == "8":
                 print(Fore.GREEN + "Anda telah keluar dari menu.")
                 break
@@ -413,6 +496,8 @@ def menu(role, nim):
                 mahasiswa_absensi(nim)
             elif choice == "3":
                 data_nilai(role,nim)
+            elif choice == "4":
+                pembayaran_ukt(role,nim)
             elif choice == "8":
                 print(Fore.GREEN + "Anda telah keluar dari menu.")
                 break
