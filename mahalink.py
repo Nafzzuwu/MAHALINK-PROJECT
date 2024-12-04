@@ -13,6 +13,7 @@ CSV_FILE = "mahasiswa_data.csv"
 LOMBA_FILE = "pengumuman_lomba.csv"
 LIBUR_FILE = "pengumuman_libur.csv"
 UKT_FILE = "data_ukt.csv"
+UKM_FILE = "data_ukm.csv"
 
 if not os.path.exists(CSV_FILE):
     df = pd.DataFrame(columns=["nim", "password", "role"])
@@ -44,6 +45,11 @@ def initialize_ukt_file():
     if not os.path.exists(UKT_FILE):
         df = pd.DataFrame(columns=["NIM", "NAMA", "NOMINAL", "STATUS"])
         df.to_csv(UKT_FILE, index=False)
+        
+def initialize_ukm_file():
+    if not os.path.exists(UKM_FILE):
+        df = pd.DataFrame(columns=["Nama UKM", "Status Perekrutan", "Informasi Lanjut"])
+        df.to_csv(UKM_FILE, index=False)
 
 def clear_terminal():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -169,13 +175,6 @@ def pengumuman_akademik(role):
                 
 ###  FITUR 2  ###
 
-def initialize_kehadiran():
-    ATTENDANCE_FILE = "data_kehadiran.csv"
-    if not os.path.exists(ATTENDANCE_FILE):
-        df = pd.DataFrame(columns=["ID", "nim", "matkul", "tanggal", "jam", "status"])
-        df.to_csv(ATTENDANCE_FILE, index=False)
-    return ATTENDANCE_FILE
-
 def admin_manage_kehadiran():
     ATTENDANCE_FILE = initialize_kehadiran()
     df = pd.read_csv(ATTENDANCE_FILE, dtype={"nim": str})
@@ -265,7 +264,7 @@ def data_kehadiran(role):
     elif role == "mahasiswa":
         mahasiswa_absensi(role)
         
-###  FITUR 3 ###
+###   FITUR 3  ###
 
 def tambah_nilai():
     initialize_nilai_file()
@@ -442,7 +441,88 @@ def pembayaran_ukt(role, nim):
         kelola_ukt_admin()
     elif role == "mahasiswa":
         lihat_ukt_mahasiswa()
+        
+###  FITUR 5  ###
 
+def admin_manage_ukm():
+    initialize_ukm_file()
+    while True:
+        print(Fore.CYAN + "\n=== KELOLA DATA UKM ===")
+        print(Fore.CYAN + "1. Lihat Data UKM")
+        print(Fore.CYAN + "2. Tambah Data UKM")
+        print(Fore.CYAN + "3. Edit Status Perekrutan dan Informasi Lanjut")
+        print(Fore.RED + "4. Kembali ke Menu Utama")
+        choice = input(Fore.YELLOW + "Pilih opsi: ").strip()
+
+        df = pd.read_csv(UKM_FILE)
+
+        if choice == "1":
+            print(Fore.CYAN + "\nData UKM:")
+            if df.empty:
+                print(Fore.RED + "Belum ada data UKM.")
+            else:
+                print(df.to_markdown(index=False, tablefmt="grid"))
+        elif choice == "2":
+            nama_ukm = input(Fore.YELLOW + "Masukkan nama UKM: ").strip()
+            status = input(Fore.YELLOW + "Masukkan status perekrutan (Open Recruitment/Closed Recruitment): ").strip()
+            info_lanjut = input(Fore.YELLOW + "Masukkan informasi lanjut (jika ada): ").strip()
+
+            new_data = pd.DataFrame({
+                "Nama UKM": [nama_ukm],
+                "Status Perekrutan": [status],
+                "Informasi Lanjut": [info_lanjut]
+            })
+
+            df = pd.concat([df, new_data], ignore_index=True)
+            df.to_csv(UKM_FILE, index=False)
+            print(Fore.GREEN + "Data UKM berhasil ditambahkan.")
+        elif choice == "3":
+            print(Fore.CYAN + "\nData UKM:")
+            print(df.to_markdown(index=False, tablefmt="grid"))
+            nama_ukm = input(Fore.YELLOW + "Masukkan nama UKM yang ingin diedit: ").strip()
+
+            if nama_ukm in df["Nama UKM"].values:
+                index = df[df["Nama UKM"] == nama_ukm].index[0]
+
+                new_status = input(Fore.YELLOW + f"Masukkan status perekrutan baru (sebelumnya: {df.at[index, 'Status Perekrutan']}): ") or df.at[index, "Status Perekrutan"]
+                df.at[index, "Status Perekrutan"] = new_status
+
+                if new_status.lower() == "open recruitment":
+                    new_info = input(Fore.YELLOW + f"Masukkan informasi lanjut baru (sebelumnya: {df.at[index, 'Informasi Lanjut']}): ") or df.at[index, "Informasi Lanjut"]
+                    df.at[index, "Informasi Lanjut"] = new_info
+
+                df.to_csv(UKM_FILE, index=False)
+                print(Fore.GREEN + "Data UKM berhasil diperbarui.")
+            else:
+                print(Fore.RED + "UKM tidak ditemukan.")
+        elif choice == "4":
+            break
+        else:
+            print(Fore.RED + "Pilihan tidak valid. Silakan coba lagi.")
+
+def mahasiswa_view_ukm():
+    df = pd.read_csv(UKM_FILE)
+    print(Fore.CYAN + "\nData UKM:")
+    print(df[['Nama UKM', 'Status Perekrutan']].to_markdown(index=False, tablefmt="grid"))
+
+    nama_ukm = input(Fore.YELLOW + "Apakah Anda ingin mengetahui informasi lanjut tentang UKM tertentu? Masukkan nama UKM (atau tekan Enter untuk kembali): ").strip()
+
+    if nama_ukm in df["Nama UKM"].values:
+        index = df[df["Nama UKM"] == nama_ukm].index[0]
+        status = df.at[index, "Status Perekrutan"]
+
+        if status.lower() == "open recruitment":
+            print(Fore.GREEN + f"\nUntuk mengikuti UKM {nama_ukm}, silakan hubungi: {df.at[index, 'Informasi Lanjut']}.")
+        else:
+            print(Fore.RED + f"Maaf, UKM {nama_ukm} sedang tidak menerima perekrutan.")
+    else:
+        print(Fore.RED + "UKM tidak ditemukan.")
+
+def keorganisasian(role):
+    if role == "admin":
+        admin_manage_ukm()
+    elif role == "mahasiswa":
+        mahasiswa_view_ukm()
 
 def menu(role, nim):
     clear_terminal()
@@ -484,6 +564,8 @@ def menu(role, nim):
                 data_nilai(role,nim)
             elif choice == "4":
                 pembayaran_ukt(role,nim)
+            elif choice == "5":
+                keorganisasian(role)
             elif choice == "8":
                 print(Fore.GREEN + "Anda telah keluar dari menu.")
                 break
@@ -498,6 +580,8 @@ def menu(role, nim):
                 data_nilai(role,nim)
             elif choice == "4":
                 pembayaran_ukt(role,nim)
+            elif choice == "5":
+                keorganisasian(role)
             elif choice == "8":
                 print(Fore.GREEN + "Anda telah keluar dari menu.")
                 break
