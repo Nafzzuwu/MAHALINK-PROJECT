@@ -574,11 +574,23 @@ def mahasiswa_view_ukm():
         status = df.at[index, "Status Perekrutan"]
 
         if status.lower() == "open recruitment":
+            clear_terminal()
+            loading_masuk()
+            clear_terminal()
             print(Fore.GREEN + f"\nUntuk mengikuti UKM {nama_ukm}, silakan hubungi: {df.at[index, 'Informasi Lanjut']}.")
+            print("")
         else:
+            clear_terminal()
+            loading_masuk()
+            clear_terminal()
             print(Fore.RED + f"Maaf, UKM {nama_ukm} sedang tidak menerima perekrutan.")
+            print("")
     else:
+        clear_terminal()
+        loading_masuk()
+        clear_terminal()
         print(Fore.RED + "UKM tidak ditemukan.")
+        print("")
 
 def keorganisasian(role):
     if role == "admin":
@@ -979,9 +991,8 @@ def main():
             clear_terminal()
             loading_dots()
             clear_terminal()
-            print("")
-            print("")
             print(Fore.GREEN + "Terima Kasih Telah Menggunakan Aplikasi MahaLink!")
+            print("")
             break
         else:
             print(Fore.RED + "Pilihan tidak valid. Silakan coba lagi.")
