@@ -14,6 +14,7 @@ LOMBA_FILE = "pengumuman_lomba.csv"
 LIBUR_FILE = "pengumuman_libur.csv"
 UKT_FILE = "data_ukt.csv"
 UKM_FILE = "data_ukm.csv"
+DOSPEM_FILE = "data_dosen_pembimbing.csv"
 
 if not os.path.exists(CSV_FILE):
     df = pd.DataFrame(columns=["nim", "password", "role"])
@@ -50,6 +51,11 @@ def initialize_ukm_file():
     if not os.path.exists(UKM_FILE):
         df = pd.DataFrame(columns=["Nama UKM", "Status Perekrutan", "Informasi Lanjut"])
         df.to_csv(UKM_FILE, index=False)
+        
+def initialize_dospem_file():
+    if not os.path.exists(DOSPEM_FILE):
+        df = pd.DataFrame(columns=["ID", "NIM", "Nama", "Dospem", "Deskripsi"])
+        df.to_csv(DOSPEM_FILE, index=False)
 
 def clear_terminal():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -524,6 +530,109 @@ def keorganisasian(role):
     elif role == "mahasiswa":
         mahasiswa_view_ukm()
 
+###  FITUR 6  ###
+
+def tambah_dospem():
+    initialize_dospem_file()
+    df = pd.read_csv(DOSPEM_FILE, dtype={"NIM": str})
+
+    nim = input(Fore.YELLOW + "Masukkan NIM Mahasiswa: ")
+    nama = input(Fore.YELLOW + "Masukkan Nama Mahasiswa: ")
+    dospem = input(Fore.YELLOW + "Masukkan Nama Dosen Pembimbing: ")
+    deskripsi = input(Fore.YELLOW + "Masukkan Deskripsi (Optional): ")
+
+    # Generate new ID
+    new_id = len(df) + 1 if not df.empty else 1
+
+    # Create new data
+    new_data = pd.DataFrame({
+        "ID": [new_id],
+        "NIM": [nim],
+        "Nama": [nama],
+        "Dospem": [dospem],
+        "Deskripsi": [deskripsi]
+    })
+
+    # Append to existing dataframe
+    df = pd.concat([df, new_data], ignore_index=True)
+    df.to_csv(DOSPEM_FILE, index=False)
+    print(Fore.GREEN + "Data Dosen Pembimbing berhasil ditambahkan.")
+
+def lihat_dospem(role,nim):
+    initialize_dospem_file()
+    df = pd.read_csv(DOSPEM_FILE, dtype={"NIM": str})
+
+    if role == "admin":
+        print(Fore.CYAN + "\n=== SELURUH DATA DOSEN PEMBIMBING ===")
+        if df.empty:
+            print(Fore.RED + "Tidak ada data Dosen Pembimbing.")
+        else:
+            print(df.to_markdown(index=False, tablefmt="grid"))
+    elif role == "mahasiswa":
+        initialize_dospem_file()
+        df = pd.read_csv(DOSPEM_FILE)
+        nim = input(Fore.YELLOW + "Masukkan NIM Anda : ").strip()
+        mahasiswa_dospem = df[df["NIM"].astype(str).str.strip() == nim]
+        print(Fore.CYAN + "\n=== DATA DOSEN PEMBIMBING ANDA ===")
+        print(mahasiswa_dospem.to_markdown(index=False, tablefmt="grid"))
+        
+        if mahasiswa_dospem.empty:
+            print(Fore.RED + "Anda belum memiliki data Dosen Pembimbing.")
+
+def edit_dospem():
+    initialize_dospem_file()
+    df = pd.read_csv(DOSPEM_FILE, dtype={"NIM": str})
+
+    print(Fore.CYAN + "\n=== DATA DOSEN PEMBIMBING ===")
+    print(df.to_markdown(index=False, tablefmt="grid"))
+    
+    id_to_edit = input(Fore.YELLOW + "Masukkan ID yang ingin diubah: ")
+
+    if id_to_edit in df["ID"].astype(str).values:
+        index = df[df["ID"] == int(id_to_edit)].index[0]
+
+        nim = input(Fore.YELLOW + f"Masukkan NIM baru (sebelumnya: {df.at[index, 'NIM']}): ") or df.at[index, "NIM"]
+        nama = input(Fore.YELLOW + f"Masukkan Nama baru (sebelumnya: {df.at[index, 'Nama']}): ") or df.at[index, "Nama"]
+        dospem = input(Fore.YELLOW + f"Masukkan Nama Dosen Pembimbing baru (sebelumnya: {df.at[index, 'Dospem']}): ") or df.at[index, "Dospem"]
+        deskripsi = input(Fore.YELLOW + f"Masukkan Deskripsi baru (sebelumnya: {df.at[index, 'Deskripsi']}): ") or df.at[index, "Deskripsi"]
+
+        df.at[index, "NIM"] = nim
+        df.at[index, "Nama"] = nama
+        df.at[index, "Dospem"] = dospem
+        df.at[index, "Deskripsi"] = deskripsi
+
+        df.to_csv(DOSPEM_FILE, index=False)
+        print(Fore.GREEN + "Data Dosen Pembimbing berhasil diperbarui.")
+    else:
+        print(Fore.RED + "ID tidak ditemukan.")
+
+def dosen_pembimbing(role, nim):
+    """
+    Menu Manajemen Dosen Pembimbing
+    """
+    if role == "admin":
+        while True:
+            print(Fore.CYAN + "\n=== MANAJEMEN DOSEN PEMBIMBING ===")
+            print(Fore.CYAN + "1. Edit Data Dosen Pembimbing")
+            print(Fore.CYAN + "2. Tambah Data Dosen Pembimbing")
+            print(Fore.CYAN + "3. Lihat Semua Data")
+            print(Fore.RED + "4. Keluar")
+            
+            pilihan = input(Fore.YELLOW + "Pilih opsi: ")
+            
+            if pilihan == "1":
+                edit_dospem()
+            elif pilihan == "2":
+                tambah_dospem()
+            elif pilihan == "3":
+                lihat_dospem(role,nim)
+            elif pilihan == "4":
+                break
+            else:
+                print(Fore.RED + "Pilihan tidak valid.")
+    elif role == "mahasiswa":
+        lihat_dospem(role, nim)
+
 def menu(role, nim):
     clear_terminal()
     loading_masuk()
@@ -557,15 +666,35 @@ def menu(role, nim):
         
         if role == "admin":
             if choice == "1":
+                clear_terminal()
+                loading_masuk()
+                clear_terminal()
                 pengumuman_akademik(role)
             elif choice == "2":
+                clear_terminal()
+                loading_masuk()
+                clear_terminal()
                 data_kehadiran(role)
             elif choice == "3":
+                clear_terminal()
+                loading_masuk()
+                clear_terminal()
                 data_nilai(role,nim)
             elif choice == "4":
+                clear_terminal()
+                loading_masuk()
+                clear_terminal()
                 pembayaran_ukt(role,nim)
             elif choice == "5":
+                clear_terminal()
+                loading_masuk()
+                clear_terminal()
                 keorganisasian(role)
+            elif choice == "6":
+                clear_terminal()
+                loading_masuk()
+                clear_terminal()
+                dosen_pembimbing(role,nim)
             elif choice == "8":
                 print(Fore.GREEN + "Anda telah keluar dari menu.")
                 break
@@ -573,15 +702,35 @@ def menu(role, nim):
                 print(Fore.CYAN + f"Anda memilih opsi {choice}. (Fitur ini belum tersedia)")
         elif role == "mahasiswa":
             if choice == "1":
+                clear_terminal()
+                loading_masuk()
+                clear_terminal()
                 pengumuman_akademik(role)
             elif choice == "2":
+                clear_terminal()
+                loading_masuk()
+                clear_terminal()
                 mahasiswa_absensi(nim)
             elif choice == "3":
+                clear_terminal()
+                loading_masuk()
+                clear_terminal()
                 data_nilai(role,nim)
             elif choice == "4":
+                clear_terminal()
+                loading_masuk()
+                clear_terminal()
                 pembayaran_ukt(role,nim)
             elif choice == "5":
+                clear_terminal()
+                loading_masuk()
+                clear_terminal()
                 keorganisasian(role)
+            elif choice == "6":
+                clear_terminal()
+                loading_masuk()
+                clear_terminal()
+                dosen_pembimbing(role,nim)
             elif choice == "8":
                 print(Fore.GREEN + "Anda telah keluar dari menu.")
                 break
