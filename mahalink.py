@@ -361,7 +361,9 @@ def lihat_nilai():
     clear_terminal()
     loading_masuk()
     clear_terminal()
+    print(Fore.CYAN + Style.BRIGHT + "================================================  DATA NILAI ANDA  ================================================")
     print(Fore.WHITE + data_mahasiswa.to_markdown(index=False))
+    print("")
     if data_mahasiswa.empty:
         print(Fore.RED + "Data nilai tidak ditemukan.")
         
@@ -461,9 +463,14 @@ def kelola_ukt_admin():
             df.to_csv(UKT_FILE, index=False)
             print(Fore.GREEN + "Data berhasil ditambahkan.")
         else:
+            clear_terminal()
+            loading_masuk()
+            clear_terminal()
             print(Fore.CYAN + "\nData Mahasiswa:")
-            print(mahasiswa.to_markdown(index=False))
+            print("")
+            print(mahasiswa.to_markdown(index=False, floatfmt=".0f"))
 
+            print(Fore.CYAN + "=" * 68)
             print(Fore.YELLOW + "1. Ubah Nominal UKT")
             print(Fore.YELLOW + "2. Ubah Status Pembayaran")
             print(Fore.YELLOW + "3. Cari Mahasiswa Lain")
