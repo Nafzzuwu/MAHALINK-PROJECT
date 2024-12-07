@@ -92,7 +92,7 @@ def display_announcements(file_name):
         print(Fore.RED + "Belum ada pengumuman.")
     else:
         print(Fore.CYAN + "\nDaftar Pengumuman:")
-        print(df.to_markdown(index=False, tablefmt="grid"))
+        print(df.to_markdown(index=False, tablefmt="heavy_grid"))
 
 def add_announcement(file_name):
     initialize_csv(file_name)
@@ -237,7 +237,7 @@ def admin_manage_kehadiran():
             loading_masuk()
             clear_terminal()
             print(Fore.CYAN + "\nData Kehadiran Mahasiswa:")
-            print(mahasiswa_data.to_markdown(index=False, tablefmt="grid"))
+            print(mahasiswa_data.to_markdown(index=False, tablefmt="heavy_grid"))
             
             print(Fore.CYAN + "1. Edit Data Kehadiran")
             print(Fore.CYAN + "2. Kembali")
@@ -290,6 +290,7 @@ def mahasiswa_absensi(nim):
 
     for matkul, (start, end) in jadwal_matkul.items():
         if start <= current_time <= end:
+            print("")
             print(Fore.YELLOW + f"Anda dapat absen untuk mata kuliah {matkul}.")
             absen = input(Fore.YELLOW + f"Absen untuk {matkul} (ya/tidak)? ").strip().lower()
             if absen == "ya":
@@ -428,6 +429,9 @@ def data_nilai(role, nim):
             else:
                 print(Fore.RED + "Pilihan tidak valid.")
     elif role == "mahasiswa":
+        clear_terminal()
+        loading_masuk()
+        clear_terminal()
         print(Fore.CYAN + "\n=== DATA NILAI MAHASISWA ===")
         lihat_nilai()
 
@@ -442,12 +446,18 @@ def kelola_ukt_admin():
         nim = input(Fore.YELLOW + "Masukkan NIM mahasiswa: ").strip()
 
         if not nim.isdigit():
+            clear_terminal()
+            loading_masuk()
+            clear_terminal()
             print(Fore.RED + "NIM tidak valid. Harus berupa angka.")
             continue
 
         mahasiswa = df[df["NIM"] == nim]
 
         if mahasiswa.empty:
+            clear_terminal()
+            loading_masuk()
+            clear_terminal()
             print(Fore.RED + "Data tidak ditemukan. Tambahkan data baru.")
             nama = input(Fore.YELLOW + "Masukkan nama mahasiswa: ").strip()
             nominal_ukt = float(input(Fore.YELLOW + "Masukkan nominal UKT: "))
@@ -499,10 +509,16 @@ def lihat_ukt_mahasiswa():
     df = pd.read_csv(UKT_FILE)
     nim = input(Fore.YELLOW + "Masukkan NIM Anda: ").strip()
     mahasiswa_ukt = df[df["NIM"].astype(str).str.strip() == nim]
+    clear_terminal()
+    loading_masuk()
+    clear_terminal()
     print(Fore.CYAN + "\nData UKT Anda:")
     print(Fore.WHITE + mahasiswa_ukt.to_markdown(index=False, floatfmt=".0f"))
     
     if mahasiswa_ukt.empty:
+        clear_terminal()
+        loading_masuk()
+        clear_terminal()
         print(Fore.RED + "Data UKT tidak ditemukan.")
 
 def pembayaran_ukt(role, nim):
@@ -516,21 +532,28 @@ def pembayaran_ukt(role, nim):
 def admin_manage_ukm():
     initialize_ukm_file()
     while True:
-        print(Fore.CYAN + "\n=== KELOLA DATA UKM ===")
+        print(Fore.CYAN + "\n============== KELOLA DATA UKM ===============")
         print(Fore.CYAN + "1. Lihat Data UKM")
         print(Fore.CYAN + "2. Tambah Data UKM")
         print(Fore.CYAN + "3. Edit Status Perekrutan dan Informasi Lanjut")
         print(Fore.RED + "4. Kembali ke Menu Utama")
+        print(Fore.CYAN + "=" * 46)
         choice = input(Fore.YELLOW + "Pilih opsi: ").strip()
 
         df = pd.read_csv(UKM_FILE)
 
         if choice == "1":
+            clear_terminal()
+            loading_masuk()
+            clear_terminal()
             print(Fore.CYAN + "\nData UKM:")
             if df.empty:
+                clear_terminal()
+                loading_masuk()
+                clear_terminal()
                 print(Fore.RED + "Belum ada data UKM.")
             else:
-                print(df.to_markdown(index=False, tablefmt="grid"))
+                print(df.to_markdown(index=False, tablefmt="heavy_grid"))
         elif choice == "2":
             nama_ukm = input(Fore.YELLOW + "Masukkan nama UKM: ").strip()
             status = input(Fore.YELLOW + "Masukkan status perekrutan (Open Recruitment/Closed Recruitment): ").strip()
@@ -547,7 +570,7 @@ def admin_manage_ukm():
             print(Fore.GREEN + "Data UKM berhasil ditambahkan.")
         elif choice == "3":
             print(Fore.CYAN + "\nData UKM:")
-            print(df.to_markdown(index=False, tablefmt="grid"))
+            print(df.to_markdown(index=False, tablefmt="heavy_grid"))
             nama_ukm = input(Fore.YELLOW + "Masukkan nama UKM yang ingin diedit: ").strip()
 
             if nama_ukm in df["Nama UKM"].values:
@@ -571,12 +594,21 @@ def admin_manage_ukm():
 
 def mahasiswa_view_ukm():
     df = pd.read_csv(UKM_FILE)
+    clear_terminal()
+    loading_masuk()
+    clear_terminal()
     print(Fore.CYAN + "\nData UKM:")
-    print(df[['Nama UKM', 'Status Perekrutan']].to_markdown(index=False, tablefmt="grid"))
+    print(df[['Nama UKM', 'Status Perekrutan']].to_markdown(index=False, tablefmt="heavy_grid"))
 
     nama_ukm = input(Fore.YELLOW + "Apakah Anda ingin mengetahui informasi lanjut tentang UKM tertentu? Masukkan nama UKM (atau tekan Enter untuk kembali): ").strip()
 
-    if nama_ukm in df["Nama UKM"].values:
+    if nama_ukm == "":
+        clear_terminal()
+        loading_masuk()
+        clear_terminal()
+        return
+    
+    elif nama_ukm in df["Nama UKM"].values:
         index = df[df["Nama UKM"] == nama_ukm].index[0]
         status = df.at[index, "Status Perekrutan"]
 
@@ -584,7 +616,7 @@ def mahasiswa_view_ukm():
             clear_terminal()
             loading_masuk()
             clear_terminal()
-            print(Fore.GREEN + f"\nUntuk mengikuti UKM {nama_ukm}, silakan hubungi: {df.at[index, 'Informasi Lanjut']}.")
+            print(Fore.GREEN + f"\nUntuk mengikuti UKM {nama_ukm}, silahkan hubungi: {df.at[index, 'Informasi Lanjut']}.")
             print("")
         else:
             clear_terminal()
@@ -635,28 +667,41 @@ def lihat_dospem(role,nim):
     df = pd.read_csv(DOSPEM_FILE, dtype={"NIM": str})
 
     if role == "admin":
+        clear_terminal()
+        loading_masuk()
+        clear_terminal()
         print(Fore.CYAN + "\n=== SELURUH DATA DOSEN PEMBIMBING ===")
         if df.empty:
             print(Fore.RED + "Tidak ada data Dosen Pembimbing.")
         else:
-            print(df.to_markdown(index=False, tablefmt="grid"))
+            print(df.to_markdown(index=False, tablefmt="heavy_grid"))
     elif role == "mahasiswa":
         initialize_dospem_file()
         df = pd.read_csv(DOSPEM_FILE)
         nim = input(Fore.YELLOW + "Masukkan NIM Anda : ").strip()
         mahasiswa_dospem = df[df["NIM"].astype(str).str.strip() == nim]
+        clear_terminal()
+        loading_masuk()
+        clear_terminal()
         print(Fore.CYAN + "\n=== DATA DOSEN PEMBIMBING ANDA ===")
-        print(mahasiswa_dospem.to_markdown(index=False, tablefmt="grid"))
+        print(mahasiswa_dospem.to_markdown(index=False, tablefmt="heavy_grid"))
+        print("")
         
         if mahasiswa_dospem.empty:
+            clear_terminal()
+            loading_masuk()
+            clear_terminal()
             print(Fore.RED + "Anda belum memiliki data Dosen Pembimbing.")
 
 def edit_dospem():
     initialize_dospem_file()
     df = pd.read_csv(DOSPEM_FILE, dtype={"NIM": str})
 
+    clear_terminal()
+    loading_masuk()
+    clear_terminal()
     print(Fore.CYAN + "\n=== DATA DOSEN PEMBIMBING ===")
-    print(df.to_markdown(index=False, tablefmt="grid"))
+    print(df.to_markdown(index=False, tablefmt="heavy_grid"))
     
     id_to_edit = input(Fore.YELLOW + "Masukkan ID yang ingin diubah: ")
 
@@ -677,6 +722,9 @@ def edit_dospem():
 def dosen_pembimbing(role, nim):
     if role == "admin":
         while True:
+            clear_terminal()
+            loading_masuk()
+            clear_terminal()
             print(Fore.CYAN + "\n=== MANAJEMEN DOSEN PEMBIMBING ===")
             print(Fore.CYAN + "1. Edit Data Dosen Pembimbing")
             print(Fore.CYAN + "2. Tambah Data Dosen Pembimbing")
@@ -728,28 +776,44 @@ def lihat_status(role,nim):
     df = pd.read_csv(STATUS_FILE, dtype={"NIM": str})
 
     if role == "admin":
+        clear_terminal()
+        loading_masuk()
+        clear_terminal()
         print(Fore.CYAN + "\n=== SELURUH DATA STATUS MAHASISWA ===")
         if df.empty:
+            clear_terminal()
+            loading_masuk()
+            clear_terminal()
             print(Fore.RED + "Tidak ada data Status Mahasiswa.")
         else:
-            print(df.to_markdown(index=False, tablefmt="grid"))
+            print(df.to_markdown(index=False, tablefmt="heavy_grid"))
     elif role == "mahasiswa":
         initialize_status_file()
         df = pd.read_csv(STATUS_FILE)
         nim = input(Fore.YELLOW + "Masukkan NIM Anda : ").strip()
         mahasiswa_status = df[df["NIM"].astype(str).str.strip() == nim]
+        clear_terminal()
+        loading_masuk()
+        clear_terminal()
         print(Fore.CYAN + "\n=== DATA STATUS MAHASISWA ANDA ===")
-        print(mahasiswa_status.to_markdown(index=False, tablefmt="grid"))
+        print(mahasiswa_status.to_markdown(index=False, tablefmt="heavy_grid"))
+        print("")
         
         if mahasiswa_status.empty:
+            clear_terminal()
+            loading_masuk()
+            clear_terminal()
             print(Fore.RED + "Anda belum memiliki data Dosen Pembimbing.")
 
 def edit_status():
     initialize_status_file()
     df = pd.read_csv(STATUS_FILE, dtype={"NIM": str})
 
+    clear_terminal()
+    loading_masuk()
+    clear_terminal()
     print(Fore.CYAN + "\n=== DATA STATUS MAHASISWA ===")
-    print(df.to_markdown(index=False, tablefmt="grid"))
+    print(df.to_markdown(index=False, tablefmt="heavy_grid"))
     
     nim_to_edit = input(Fore.YELLOW + "Masukkan NIM yang ingin diubah: ")
 
@@ -772,6 +836,9 @@ def edit_status():
 def status_mahasiswa(role, nim):
     if role == "admin":
         while True:
+            clear_terminal()
+            loading_masuk()
+            clear_terminal()
             print(Fore.CYAN + "\n=== PENGATURAN STATUS MAHASISWA ===")
             print(Fore.CYAN + "1. Edit Data Status Mahasiswa")
             print(Fore.CYAN + "2. Tambah Data Status Mahasiswa")
@@ -792,7 +859,8 @@ def status_mahasiswa(role, nim):
                 print(Fore.RED + "Pilihan tidak valid.")
     elif role == "mahasiswa":
         lihat_status(role, nim)
-    
+        
+###  BATAS CODE FITUR  ###    
 
 def menu(role, nim):
     clear_terminal()
@@ -998,7 +1066,8 @@ def main():
             clear_terminal()
             loading_dots()
             clear_terminal()
-            print(Fore.GREEN + "Terima Kasih Telah Menggunakan Aplikasi MahaLink!")
+            print(Fore.BLUE + text2art("Terimah Kasih!", font="small"))
+            print(Fore.GREEN + Style.BRIGHT + ("                Telah Menggunakan Aplikasi MahaLink :D"))
             print("")
             break
         else:
