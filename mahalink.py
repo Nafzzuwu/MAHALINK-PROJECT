@@ -93,23 +93,42 @@ def display_announcements(file_name):
     else:
         print(Fore.CYAN + "\n============================  Daftar Pengumuman  =============================")
         print(df.to_markdown(index=False, tablefmt="heavy_grid"))
+        
+def cek_input_string(input_value):
+
+    if not input_value.strip():
+        return False
+    try:
+        float(input_value)
+        return False
+    except ValueError:
+        return True
 
 def add_announcement(file_name):
     initialize_csv(file_name)
     
-    try:
-        judul = str(input(Fore.YELLOW + "Masukkan judul pengumuman: "))
-        isi = str(input(Fore.YELLOW + "Masukkan isi pengumuman: "))
-        tanggal = str(input(Fore.YELLOW + "Mausukkan tanggal pengumuman: "))
-    except ValueError:
-        print("")
-        print(Fore.RED + "Inputan Harus Sesuai!")
+    judul = input(Fore.YELLOW + "Masukkan judul pengumuman: ").strip()
+    if not cek_input_string(judul):
+        print(Fore.RED + "Inputan Harus Sesuai! (Judul harus berupa teks non-kosong)")
+        return
+
+    isi = input(Fore.YELLOW + "Masukkan isi pengumuman: ").strip()
+    if not cek_input_string(isi):
+        print(Fore.RED + "Inputan Harus Sesuai! (Isi harus berupa teks non-kosong)")
+        return
+
+    tanggal = input(Fore.YELLOW + "Masukkan tanggal pengumuman: ").strip()
+    if not cek_input_string(tanggal):
+        print(Fore.RED + "Inputan Harus Sesuai! (Tanggal harus berupa teks non-kosong)")
         return
     
     df = pd.read_csv(file_name)
     new_id = len(df) + 1
     df = pd.concat([df, pd.DataFrame({"ID": [new_id], "Judul": [judul], "Isi": [isi], "Tanggal": [tanggal]})])
     df.to_csv(file_name, index=False)
+    clear_terminal()
+    loading_masuk()
+    clear_terminal()
     print(Fore.GREEN + "Pengumuman berhasil ditambahkan.")
 
 def edit_announcement(file_name):
@@ -515,7 +534,7 @@ def kelola_ukt_admin():
                     
                 except ValueError:
                     print("")
-                    print(Fore.RED + "Inputan Harus Sesuai!")
+                    print(Fore.RED + "Inputan Harus Berupa Angka!")
                     return
                 
                 df.loc[df["NIM"] == nim, "NOMINAL"] = nominal_ukt
