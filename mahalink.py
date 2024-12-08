@@ -515,7 +515,7 @@ def kelola_ukt_admin():
                     
                 except ValueError:
                     print("")
-                    print(Fore.RED + "Inputan Harus Berupa Angka!")
+                    print(Fore.RED + "Inputan Harus Sesuai!")
                     return
                 
                 df.loc[df["NIM"] == nim, "NOMINAL"] = nominal_ukt
