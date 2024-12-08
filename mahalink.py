@@ -91,7 +91,7 @@ def display_announcements(file_name):
     if df.empty:
         print(Fore.RED + "Belum ada pengumuman.")
     else:
-        print(Fore.CYAN + "\nDaftar Pengumuman:")
+        print(Fore.CYAN + "\n============================  Daftar Pengumuman  =============================")
         print(df.to_markdown(index=False, tablefmt="heavy_grid"))
 
 def add_announcement(file_name):
@@ -330,9 +330,17 @@ def tambah_nilai():
     nim = input(Fore.YELLOW + "Masukkan NIM: ")
     nama = input(Fore.YELLOW + "Masukkan Nama Mahasiswa: ")
     matkul = input(Fore.YELLOW + "Masukkan Mata Kuliah: ")
-    tugas = float(input(Fore.YELLOW + "Masukkan Nilai Tugas: "))
-    uts = float(input(Fore.YELLOW + "Masukkan Nilai UTS: "))
-    uas = float(input(Fore.YELLOW + "Masukkan Nilai UAS: "))
+    
+    try:
+        tugas = float(input(Fore.YELLOW + "Masukkan Nilai Tugas: "))
+        uts = float(input(Fore.YELLOW + "Masukkan Nilai UTS: "))
+        uas = float(input(Fore.YELLOW + "Masukkan Nilai UAS: "))
+        
+    except ValueError:
+        print("")
+        print(Fore.RED + "Inputan Harus Berupa Angka!")
+        return
+    
 
     rata_rata = (tugas + uts + uas) / 3
     new_id = len(df) + 1
@@ -476,24 +484,38 @@ def kelola_ukt_admin():
             clear_terminal()
             loading_masuk()
             clear_terminal()
-            print(Fore.CYAN + "\nData Mahasiswa:")
+            print(Fore.CYAN + "\n========================  Data Mahasiswa  =======================")
             print("")
-            print(mahasiswa.to_markdown(index=False, floatfmt=".0f"))
+            print(mahasiswa.to_markdown(index=False, floatfmt=".0f", tablefmt="heavy_grid"))
 
-            print(Fore.CYAN + "=" * 68)
+            print(Fore.CYAN + "=" * 65)
             print(Fore.YELLOW + "1. Ubah Nominal UKT")
             print(Fore.YELLOW + "2. Ubah Status Pembayaran")
             print(Fore.YELLOW + "3. Cari Mahasiswa Lain")
             print(Fore.RED + "4. Kembali ke Menu Utama")
+            print(Fore.CYAN + "=" * 65)
             pilihan = input(Fore.YELLOW + "Pilih opsi: ").strip()
 
             if pilihan == "1":
-                nominal_ukt = float(input(Fore.YELLOW + "Masukkan nominal UKT baru: "))
+                try:
+                    nominal_ukt = float(input(Fore.YELLOW + "Masukkan nominal UKT baru: "))
+                    
+                except ValueError:
+                    print("")
+                    print(Fore.RED + "Inputan Harus Berupa Angka!")
+                    return
+                
                 df.loc[df["NIM"] == nim, "NOMINAL"] = nominal_ukt
                 df.to_csv(UKT_FILE, index=False)
                 print(Fore.GREEN + "Nominal UKT berhasil diubah.")
             elif pilihan == "2":
-                status_pembayaran = input(Fore.YELLOW + "Masukkan status pembayaran baru (Lunas/Belum Lunas): ").capitalize()
+                status_pembayaran = str(input(Fore.YELLOW + "Masukkan status pembayaran baru (Lunas/Belum Lunas): ").capitalize())
+                
+                if not status_pembayaran == "Lunas" and "Belum Lunas":
+                    print(Fore.RED + "Inputan Harus Sesuai!")
+                    print("")
+                    return
+                
                 df.loc[df["NIM"] == nim, "STATUS"] = status_pembayaran
                 df.to_csv(UKT_FILE, index=False)
                 print(Fore.GREEN + "Status pembayaran berhasil diubah.")
@@ -513,7 +535,7 @@ def lihat_ukt_mahasiswa():
     loading_masuk()
     clear_terminal()
     print(Fore.CYAN + "\nData UKT Anda:")
-    print(Fore.WHITE + mahasiswa_ukt.to_markdown(index=False, floatfmt=".0f"))
+    print(Fore.WHITE + mahasiswa_ukt.to_markdown(index=False, floatfmt=".0f", tablefmt="heavy_grid"))
     
     if mahasiswa_ukt.empty:
         clear_terminal()
@@ -555,9 +577,12 @@ def admin_manage_ukm():
             else:
                 print(df.to_markdown(index=False, tablefmt="heavy_grid"))
         elif choice == "2":
-            nama_ukm = input(Fore.YELLOW + "Masukkan nama UKM: ").strip()
-            status = input(Fore.YELLOW + "Masukkan status perekrutan (Open Recruitment/Closed Recruitment): ").strip()
-            info_lanjut = input(Fore.YELLOW + "Masukkan informasi lanjut (jika ada): ").strip()
+            try:
+                nama_ukm = str(input(Fore.YELLOW + "Masukkan nama UKM: ").strip())
+                status = str(input(Fore.YELLOW + "Masukkan status perekrutan (Open Recruitment/Closed Recruitment): ").strip())
+                info_lanjut = str(input(Fore.YELLOW + "Masukkan informasi lanjut (jika ada): ").strip())
+            except ValueError:
+                print(Fore.RED + "Inputan Harus Berupa Kalimat!")
 
             new_data = pd.DataFrame({
                 "Nama UKM": [nama_ukm],
@@ -643,10 +668,15 @@ def tambah_dospem():
     initialize_dospem_file()
     df = pd.read_csv(DOSPEM_FILE, dtype={"NIM": str})
 
-    nim = input(Fore.YELLOW + "Masukkan NIM Mahasiswa: ")
-    nama = input(Fore.YELLOW + "Masukkan Nama Mahasiswa: ")
-    dospem = input(Fore.YELLOW + "Masukkan Nama Dosen Pembimbing: ")
-    penelitian = input(Fore.YELLOW + "Masukkan Penelitian (Optional): ")
+    try:
+        nim = float(input(Fore.YELLOW + "Masukkan NIM Mahasiswa: "))
+        nama = str(input(Fore.YELLOW + "Masukkan Nama Mahasiswa: "))
+        dospem = str(input(Fore.YELLOW + "Masukkan Nama Dosen Pembimbing: "))
+        penelitian = str(input(Fore.YELLOW + "Masukkan Penelitian (Optional): "))
+    except ValueError:
+        print(Fore.RED + "Inputan Harus Sesuai!")
+        print("")
+        return
 
     new_id = len(df) + 1 if not df.empty else 1
 
@@ -717,27 +747,35 @@ def edit_dospem():
         df.to_csv(DOSPEM_FILE, index=False)
         print(Fore.GREEN + "Data Dosen Pembimbing berhasil diperbarui.")
     else:
+        print("")
         print(Fore.RED + "ID tidak ditemukan.")
 
 def dosen_pembimbing(role, nim):
     if role == "admin":
         while True:
-            clear_terminal()
-            loading_masuk()
-            clear_terminal()
             print(Fore.CYAN + "\n=== MANAJEMEN DOSEN PEMBIMBING ===")
             print(Fore.CYAN + "1. Edit Data Dosen Pembimbing")
             print(Fore.CYAN + "2. Tambah Data Dosen Pembimbing")
             print(Fore.CYAN + "3. Lihat Semua Data")
             print(Fore.RED + "4. Keluar")
+            print(Fore.CYAN + "=" * 34)
             
             pilihan = input(Fore.YELLOW + "Pilih opsi: ")
             
             if pilihan == "1":
+                clear_terminal()
+                loading_masuk()
+                clear_terminal()
                 edit_dospem()
             elif pilihan == "2":
+                clear_terminal()
+                loading_masuk()
+                clear_terminal()
                 tambah_dospem()
             elif pilihan == "3":
+                clear_terminal()
+                loading_masuk()
+                clear_terminal()
                 lihat_dospem(role,nim)
             elif pilihan == "4":
                 break
@@ -753,11 +791,16 @@ def tambah_status():
 
     df = pd.read_csv(STATUS_FILE, dtype={"NIM": str})
 
-    nim = input(Fore.YELLOW + "Masukkan NIM Mahasiswa: ")
-    nama = input(Fore.YELLOW + "Masukkan Nama Mahasiswa: ")
-    angkatan = input(Fore.YELLOW + "Masukkan Angkatan Mahasiswa: ")
-    status = input(Fore.YELLOW + "Masukkan Status Kelulusan (Lulus/Belum Lulus): ")
-    prestasi = input(Fore.YELLOW + "Masukkan Prestasi Mahasiswa : ")
+    try:
+        nim = float(input(Fore.YELLOW + "Masukkan NIM Mahasiswa: "))
+        nama = str(input(Fore.YELLOW + "Masukkan Nama Mahasiswa: "))
+        angkatan = float(input(Fore.YELLOW + "Masukkan Angkatan Mahasiswa: "))
+        status = float(input(Fore.YELLOW + "Masukkan Status Kelulusan (Lulus/Belum Lulus): "))
+        prestasi = str(input(Fore.YELLOW + "Masukkan Prestasi Mahasiswa : "))
+    except ValueError:
+        print("")
+        print(Fore.RED + "Inputan Harus Sesuai!")
+        return
 
     new_data = pd.DataFrame({
         "NIM": [nim],
@@ -790,7 +833,14 @@ def lihat_status(role,nim):
     elif role == "mahasiswa":
         initialize_status_file()
         df = pd.read_csv(STATUS_FILE)
-        nim = input(Fore.YELLOW + "Masukkan NIM Anda : ").strip()
+        
+        try:
+            nim = float(input(Fore.YELLOW + "Masukkan NIM Anda : ").strip())
+        except ValueError:
+            print("")
+            print(Fore.RED + "NIM Harus Berupa Angka!")
+            return
+        
         mahasiswa_status = df[df["NIM"].astype(str).str.strip() == nim]
         clear_terminal()
         loading_masuk()
