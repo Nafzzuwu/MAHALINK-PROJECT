@@ -96,9 +96,16 @@ def display_announcements(file_name):
 
 def add_announcement(file_name):
     initialize_csv(file_name)
-    judul = input(Fore.YELLOW + "Masukkan judul pengumuman: ")
-    isi = input(Fore.YELLOW + "Masukkan isi pengumuman: ")
-    tanggal = input(Fore.YELLOW + "Mausukkan tanggal pengumuman: ")
+    
+    try:
+        judul = str(input(Fore.YELLOW + "Masukkan judul pengumuman: "))
+        isi = str(input(Fore.YELLOW + "Masukkan isi pengumuman: "))
+        tanggal = str(input(Fore.YELLOW + "Mausukkan tanggal pengumuman: "))
+    except ValueError:
+        print("")
+        print(Fore.RED + "Inputan Harus Sesuai!")
+        return
+    
     df = pd.read_csv(file_name)
     new_id = len(df) + 1
     df = pd.concat([df, pd.DataFrame({"ID": [new_id], "Judul": [judul], "Isi": [isi], "Tanggal": [tanggal]})])
@@ -112,8 +119,14 @@ def edit_announcement(file_name):
     df = pd.read_csv(file_name)
     if id_to_edit in df["ID"].astype(str).values:
         index = df[df["ID"] == int(id_to_edit)].index[0]
-        judul = input(Fore.YELLOW + f"Masukkan judul baru (sebelumnya: {df.at[index, 'Judul']}): ") or df.at[index, "Judul"]
-        isi = input(Fore.YELLOW + f"Masukkan isi baru (sebelumnya: {df.at[index, 'Isi']}): ") or df.at[index, "Isi"]
+        try:
+            judul = str(input(Fore.YELLOW + f"Masukkan judul baru (sebelumnya: {df.at[index, 'Judul']}): ") or df.at[index, "Judul"])
+            isi = str(input(Fore.YELLOW + f"Masukkan isi baru (sebelumnya: {df.at[index, 'Isi']}): ") or df.at[index, "Isi"])
+        except ValueError:
+            print("")
+            print(Fore.RED + "Inputan Harus Sesuai!")
+            return
+        
         df.at[index, "Judul"] = judul
         df.at[index, "Isi"] = isi
         df.to_csv(file_name, index=False)
@@ -327,18 +340,18 @@ def tambah_nilai():
     initialize_nilai_file()
     df = pd.read_csv(NILAI_FILE)
 
-    nim = input(Fore.YELLOW + "Masukkan NIM: ")
-    nama = input(Fore.YELLOW + "Masukkan Nama Mahasiswa: ")
-    matkul = input(Fore.YELLOW + "Masukkan Mata Kuliah: ")
     
     try:
+        nim = str(input(Fore.YELLOW + "Masukkan NIM: "))
+        nama = str(input(Fore.YELLOW + "Masukkan Nama Mahasiswa: "))
+        matkul = str(input(Fore.YELLOW + "Masukkan Mata Kuliah: "))
         tugas = float(input(Fore.YELLOW + "Masukkan Nilai Tugas: "))
         uts = float(input(Fore.YELLOW + "Masukkan Nilai UTS: "))
         uas = float(input(Fore.YELLOW + "Masukkan Nilai UAS: "))
         
     except ValueError:
         print("")
-        print(Fore.RED + "Inputan Harus Berupa Angka!")
+        print(Fore.RED + "Inputan Harus Sesuai!")
         return
     
 
