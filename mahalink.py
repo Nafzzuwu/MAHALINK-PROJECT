@@ -444,7 +444,8 @@ def hapus_nilai():
     else:
         print(Fore.RED + "ID tidak ditemukan.")
 
-def data_nilai(role, nim):
+def data_nilai(role
+               ):
     if role == "admin":
         while True:
             print(Fore.CYAN + "\n========= MANAJEMEN DATA NILAI =========")
@@ -827,7 +828,7 @@ def tambah_status():
         nim = float(input(Fore.YELLOW + "Masukkan NIM Mahasiswa: "))
         nama = str(input(Fore.YELLOW + "Masukkan Nama Mahasiswa: "))
         angkatan = float(input(Fore.YELLOW + "Masukkan Angkatan Mahasiswa: "))
-        status = float(input(Fore.YELLOW + "Masukkan Status Kelulusan (Lulus/Belum Lulus): "))
+        status = str(input(Fore.YELLOW + "Masukkan Status Kelulusan (Lulus/Belum Lulus): "))
         prestasi = str(input(Fore.YELLOW + "Masukkan Prestasi Mahasiswa : "))
     except ValueError:
         print("")
@@ -844,6 +845,9 @@ def tambah_status():
 
     df = pd.concat([df, new_data], ignore_index=True)
     df.to_csv(STATUS_FILE, index=False)
+    clear_terminal()
+    loading_masuk()
+    clear_terminal()
     print(Fore.GREEN + "Data Status Mahasiswa berhasil ditambahkan.")
 
 def lihat_status(role,nim):
@@ -918,9 +922,6 @@ def edit_status():
 def status_mahasiswa(role, nim):
     if role == "admin":
         while True:
-            clear_terminal()
-            loading_masuk()
-            clear_terminal()
             print(Fore.CYAN + "\n=== PENGATURAN STATUS MAHASISWA ===")
             print(Fore.CYAN + "1. Edit Data Status Mahasiswa")
             print(Fore.CYAN + "2. Tambah Data Status Mahasiswa")
