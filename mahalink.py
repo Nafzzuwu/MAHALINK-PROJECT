@@ -444,8 +444,7 @@ def hapus_nilai():
     else:
         print(Fore.RED + "ID tidak ditemukan.")
 
-def data_nilai(role
-               ):
+def data_nilai(role, nim):
     if role == "admin":
         while True:
             print(Fore.CYAN + "\n========= MANAJEMEN DATA NILAI =========")
@@ -870,11 +869,13 @@ def lihat_status(role,nim):
         initialize_status_file()
         df = pd.read_csv(STATUS_FILE)
         
-        try:
-            nim = float(input(Fore.YELLOW + "Masukkan NIM Anda : ").strip())
-        except ValueError:
-            print("")
+        nim = input(Fore.YELLOW + "Masukkan NIM Anda : ").strip()
+        if not nim.isdigit():
+            clear_terminal()
+            loading_masuk()
+            clear_terminal()
             print(Fore.RED + "NIM Harus Berupa Angka!")
+            print("")
             return
         
         mahasiswa_status = df[df["NIM"].astype(str).str.strip() == nim]
@@ -886,9 +887,6 @@ def lihat_status(role,nim):
         print("")
         
         if mahasiswa_status.empty:
-            clear_terminal()
-            loading_masuk()
-            clear_terminal()
             print(Fore.RED + "Anda belum memiliki data Dosen Pembimbing.")
 
 def edit_status():
